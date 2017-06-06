@@ -55,10 +55,12 @@ __attribute__((visibility("default")))
 std::unique_ptr<const JSBigString> loadScriptFromAssets(
     AAssetManager *manager,
     const std::string& assetName) {
-  #ifdef WITH_FBSYSTRACE
+
+#ifdef WITH_FBSYSTRACE
   FbSystraceSection s(TRACE_TAG_REACT_CXX_BRIDGE, "reactbridge_jni_loadScriptFromAssets",
     "assetName", assetName);
   #endif
+    FBLOGE("React - loading from assets");
   if (manager) {
     auto asset = AAssetManager_open(
       manager,
