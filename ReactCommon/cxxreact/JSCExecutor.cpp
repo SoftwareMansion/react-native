@@ -62,6 +62,9 @@
 #include "JSCPerfStats.h"
 #endif
 
+#include <android/log.h>
+#include <time.h>
+
 namespace facebook {
 namespace react {
 
@@ -129,6 +132,12 @@ static JSValueRef nativeInjectHMRUpdate(
   return Value::makeUndefined(ctx);
 }
 #endif
+
+        int64_t getTimeNsec() {
+          struct timespec now;
+          clock_gettime(CLOCK_MONOTONIC, &now);
+          return (int64_t) now.tv_sec * 1000000000LL + now.tv_nsec;
+        }
 
 std::unique_ptr<JSExecutor> JSCExecutorFactory::createJSExecutor(
     std::shared_ptr<ExecutorDelegate> delegate, std::shared_ptr<MessageQueueThread> jsQueue) {
@@ -345,6 +354,9 @@ void JSCExecutor::loadApplicationScript(std::unique_ptr<const JSBigString> scrip
                     "sourceURL", sourceURL);
 
   ReactMarker::logMarker("RUN_JS_BUNDLE_START");
+  __android_log_print(ANDROID_LOG_ERROR, "jni", "START");
+  auto start = getTimeNsec();
+
   String jsSourceURL(m_context, sourceURL.c_str());
 
   // TODO t15069155: reduce the number of overrides here
@@ -412,6 +424,10 @@ void JSCExecutor::loadApplicationScript(std::unique_ptr<const JSBigString> scrip
   }
 
   flush();
+  auto end = getTimeNsec();
+  double duration = ((double) (end - start)) / 1000000;
+
+  __android_log_print(ANDROID_LOG_ERROR, "jni", "END: %lf", duration);
 
   ReactMarker::logMarker("CREATE_REACT_CONTEXT_END");
   ReactMarker::logMarker("RUN_JS_BUNDLE_END");
