@@ -372,6 +372,14 @@ public class DevSupportManagerImpl implements
             handleReloadJS();
           }
         });
+    options.put("Start inspector",
+            new DevOptionHandler() {
+              @Override
+              public void onOptionSelected() {
+                startInspector();
+              }
+            }
+    );
     options.put(
         mDevSettings.isRemoteJSDebugEnabled() ?
             mApplicationContext.getString(R.string.catalyst_debugjs_off) :

@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "cinttypes": "cpp",
+        "rope": "cpp",
+        "slist": "cpp",
+        "array": "cpp",
+        "hashtable": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "stdexcept": "cpp",
+        "exception": "cpp"
+    }
+}

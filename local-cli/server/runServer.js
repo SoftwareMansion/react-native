@@ -47,7 +47,10 @@ const openStackFrameInEditorMiddleware = require('./middleware/openStackFrameInE
 const path = require('path');
 const statusPageMiddleware = require('./middleware/statusPageMiddleware.js');
 const systraceProfileMiddleware = require('./middleware/systraceProfileMiddleware.js');
+const inspectorProxyMiddleware = require('./middleware/inspectorProxyMiddleware.js');
 const webSocketProxy = require('./util/webSocketProxy.js');
+const inspectorWebSocketProxy = require('./util/inspectorWebSocketProxy.js');
+var query = require('qs-middleware');
 
 /* $FlowFixMe(>=0.54.0 site=react_native_oss) This comment suppresses an error
  * found when Flow v0.54 was deployed. To see the error delete this comment and
@@ -74,7 +77,9 @@ export type Args = {|
   +sourceExts: $ReadOnlyArray<string>,
   +verbose: boolean,
 |};
-
+const inspectorStore = {
+  pages: []
+};
 function runServer(
   args: Args,
   config: ConfigT,
@@ -84,6 +89,7 @@ function runServer(
   readyCallback: (reporter: Reporter) => mixed,
 ) {
   var wsProxy = null;
+  var inspectorWsProxy = null;
   var ms = null;
 
   /* $FlowFixMe: Flow is wrong, Node.js docs specify that process.stdout is an
@@ -95,6 +101,7 @@ function runServer(
   startedCallback(reporter);
 
   const app = connect()
+    .use(query())
     .use(loadRawBodyMiddleware)
     .use(connect.compress())
     .use(
@@ -106,6 +113,7 @@ function runServer(
     .use(statusPageMiddleware)
     .use(systraceProfileMiddleware)
     .use(indexPageMiddleware)
+    .use(inspectorProxyMiddleware(inspectorStore))
     .use(packagerServer.processRequest.bind(packagerServer));
 
   args.projectRoots.forEach(root => app.use(connect.static(root)));
@@ -133,6 +141,7 @@ function runServer(
       packagerServer,
     });
 
+    inspectorWsProxy = inspectorWebSocketProxy.attachToServer(serverInstance, inspectorStore);
     wsProxy = webSocketProxy.attachToServer(serverInstance, '/debugger-proxy');
     ms = messageSocket.attachToServer(serverInstance, '/message');
     readyCallback(reporter);

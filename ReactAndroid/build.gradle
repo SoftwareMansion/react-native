@@ -196,7 +196,7 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-task buildReactNdkLib(dependsOn: [prepareJSC, prepareBoost, prepareDoubleConversion, prepareFolly, prepareGlog], type: Exec) {
+task buildReactNdkLib(dependsOn: [prepareJSC, prepareBoost, prepareDoubleConversion, prepareGlog], type: Exec) { // prepareFolly
     inputs.file('src/main/jni/react')
     outputs.dir("$buildDir/react-ndk/all")
     commandLine getNdkBuildFullPath(),
@@ -241,6 +241,7 @@ android {
         versionName "1.0"
 
         ndk {
+            abiFilters "armeabi-v7a" //, "x86"
             moduleName "reactnativejni"
         }
 
@@ -248,6 +249,15 @@ android {
         buildConfigField 'int', 'EXOPACKAGE_FLAGS', '0'
         testApplicationId "com.facebook.react.tests.gradle"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    splits {
+        abi {
+            reset()
+            enable false
+            universalApk false  // If true, also generate a universal APK
+            include "armeabi-v7a" // "x86"
+        }
     }
 
     sourceSets.main {
@@ -273,6 +283,13 @@ android {
     packagingOptions {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
+        exclude 'lib/armeabi-v7a/libc++_shared.so'
+    }
+}
+
+repositories {
+    maven {
+        url "/Users/lukaszgurdek/expo/jnidebugger-bin/android"
     }
 }
 
@@ -288,7 +305,7 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
     compile 'com.squareup.okhttp3:okhttp-urlconnection:3.6.0'
     compile 'com.squareup.okio:okio:1.13.0'
-    compile 'org.webkit:android-jsc:r174650'
+    compile 'org.webkit:android-jsc:r216113'
 
     testCompile "junit:junit:${JUNIT_VERSION}"
     testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"

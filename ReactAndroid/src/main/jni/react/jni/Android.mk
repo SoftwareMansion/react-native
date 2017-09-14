@@ -12,6 +12,7 @@ LOCAL_SRC_FILES := \
   JMessageQueueThread.cpp \
   JSCPerfLogging.cpp \
   JSLoader.cpp \
+  JInspector.cpp \
   JSLogging.cpp \
   JniJSModulesUnbundle.cpp \
   MethodInvoker.cpp \
@@ -29,7 +30,7 @@ LOCAL_SRC_FILES := \
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../..
 
-LOCAL_CFLAGS += -Wall -Werror -fvisibility=hidden -fexceptions -frtti
+LOCAL_CFLAGS += -Wall -Werror -fvisibility=hidden -fexceptions -frtti -DWITH_INSPECTOR=1
 CXX11_FLAGS := -std=c++11
 LOCAL_CFLAGS += $(CXX11_FLAGS)
 LOCAL_EXPORT_CPPFLAGS := $(CXX11_FLAGS)
