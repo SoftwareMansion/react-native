@@ -1,10 +1,8 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
  *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  *
  * @providesModule requireNativeComponent
  * @flow
@@ -12,6 +10,7 @@
  */
 'use strict';
 
+const Platform = require('Platform');
 const ReactNativeBridgeEventPlugin = require('ReactNativeBridgeEventPlugin');
 const ReactNativeStyleAttributes = require('ReactNativeStyleAttributes');
 const UIManager = require('UIManager');
@@ -24,9 +23,6 @@ const processColor = require('processColor');
 const resolveAssetSource = require('resolveAssetSource');
 const sizesDiffer = require('sizesDiffer');
 const verifyPropTypes = require('verifyPropTypes');
-/* $FlowFixMe(>=0.54.0 site=react_native_oss) This comment suppresses an error
- * found when Flow v0.54 was deployed. To see the error delete this comment and
- * run Flow. */
 const invariant = require('fbjs/lib/invariant');
 const warning = require('fbjs/lib/warning');
 
@@ -47,35 +43,30 @@ const warning = require('fbjs/lib/warning');
  */
 import type {ComponentInterface} from 'verifyPropTypes';
 
+let hasAttachedDefaultEventTypes: boolean = false;
+
 function requireNativeComponent(
   viewName: string,
   componentInterface?: ?ComponentInterface,
   extraConfig?: ?{nativeOnly?: Object},
 ): React$ComponentType<any> | string {
-  function attachBubblingEventTypes(viewConfig) {
-    if (UIManager.genericBubblingEventTypes) {
-      viewConfig.bubblingEventTypes = merge(
-        viewConfig.bubblingEventTypes,
-        UIManager.genericBubblingEventTypes,
-      );
-      // As genericBubblingEventTypes do not change over time, and there's
-      // merge of all the events happening in Fiber, we need to pass
-      // genericBubblingEventTypes to Fiber only once. Therefore, we can delete
-      // it and forget about it.
-      delete UIManager.genericBubblingEventTypes;
-    }
-  }
-
-  function attachDirectEventTypes(viewConfig) {
-    if (UIManager.genericDirectEventTypes) {
-      viewConfig.directEventTypes = merge(
-        viewConfig.directEventTypes,
-        UIManager.genericDirectEventTypes,
-      );
-      // As genericDirectEventTypes do not change over time, and there's merge
-      // of all the events happening in Fiber, we need to pass genericDirectEventTypes
-      // to Fiber only once. Therefore, we can delete it and forget about it.
-      delete UIManager.genericDirectEventTypes;
+  function attachDefaultEventTypes(viewConfig: any) {
+    if (Platform.OS === 'android') {
+      // This is supported on Android platform only,
+      // as lazy view managers discovery is Android-specific.
+      if (UIManager.ViewManagerNames) {
+        // Lazy view managers enabled.
+        viewConfig = merge(viewConfig, UIManager.getDefaultEventTypes());
+      } else {
+        viewConfig.bubblingEventTypes = merge(
+          viewConfig.bubblingEventTypes,
+          UIManager.genericBubblingEventTypes,
+        );
+        viewConfig.directEventTypes = merge(
+          viewConfig.directEventTypes,
+          UIManager.genericDirectEventTypes,
+        );
+      }
     }
   }
 
@@ -137,17 +128,33 @@ function requireNativeComponent(
     }
 
     let baseModuleName = viewConfig.baseModuleName;
-    let nativeProps = {...viewConfig.NativeProps};
+    let bubblingEventTypes = viewConfig.bubblingEventTypes;
+    let directEventTypes = viewConfig.directEventTypes;
+    let nativeProps = viewConfig.NativeProps;
     while (baseModuleName) {
       const baseModule = UIManager[baseModuleName];
       if (!baseModule) {
         warning(false, 'Base module "%s" does not exist', baseModuleName);
         baseModuleName = null;
       } else {
-        nativeProps = {...nativeProps, ...baseModule.NativeProps};
+        bubblingEventTypes = {
+          ...baseModule.bubblingEventTypes,
+          ...bubblingEventTypes,
+        };
+        directEventTypes = {
+          ...baseModule.directEventTypes,
+          ...directEventTypes,
+        };
+        nativeProps = {
+          ...baseModule.NativeProps,
+          ...nativeProps,
+        };
         baseModuleName = baseModule.baseModuleName;
       }
     }
+
+    viewConfig.bubblingEventTypes = bubblingEventTypes;
+    viewConfig.directEventTypes = directEventTypes;
 
     for (const key in nativeProps) {
       let useAttribute = false;
@@ -184,8 +191,10 @@ function requireNativeComponent(
         );
     }
 
-    attachBubblingEventTypes(viewConfig);
-    attachDirectEventTypes(viewConfig);
+    if (!hasAttachedDefaultEventTypes) {
+      attachDefaultEventTypes(viewConfig);
+      hasAttachedDefaultEventTypes = true;
+    }
 
     // Register this view's event types with the ReactNative renderer.
     // This enables view managers to be initialized lazily, improving perf,

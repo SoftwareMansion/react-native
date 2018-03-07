@@ -1,36 +1,90 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
  *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  *
  * @providesModule Slider
  * @flow
  */
 'use strict';
 
-var Image = require('Image');
-var ColorPropType = require('ColorPropType');
-var NativeMethodsMixin = require('NativeMethodsMixin');
-var ReactNativeViewAttributes = require('ReactNativeViewAttributes');
-var Platform = require('Platform');
-var React = require('React');
-var PropTypes = require('prop-types');
-var StyleSheet = require('StyleSheet');
-var ViewPropTypes = require('ViewPropTypes');
+const Image = require('Image');
+const ColorPropType = require('ColorPropType');
+const NativeMethodsMixin = require('NativeMethodsMixin');
+const ReactNativeViewAttributes = require('ReactNativeViewAttributes');
+const Platform = require('Platform');
+const React = require('React');
+const PropTypes = require('prop-types');
+const StyleSheet = require('StyleSheet');
+const ViewPropTypes = require('ViewPropTypes');
 
-var createReactClass = require('create-react-class');
-var requireNativeComponent = require('requireNativeComponent');
+const createReactClass = require('create-react-class');
+const requireNativeComponent = require('requireNativeComponent');
 
 type Event = Object;
 
 /**
  * A component used to select a single value from a range of values.
+ *
+ * ### Usage
+ *
+ * The example below shows how to use `Slider` to change
+ * a value used by `Text`. The value is stored using
+ * the state of the root component (`App`). The same component
+ * subscribes to the `onValueChange`  of `Slider` and changes
+ * the value using `setState`.
+ *
+ *```
+ * import React from 'react';
+ * import { StyleSheet, Text, View, Slider } from 'react-native';
+ *
+ * export default class App extends React.Component {
+ *   constructor(props) {
+ *     super(props);
+ *     this.state = {
+ *       value: 50
+ *     }
+ *   }
+ *
+ *   change(value) {
+ *     this.setState(() => {
+ *       return {
+ *         value: parseFloat(value)
+ *       };
+ *     });
+ *   }
+ *
+ *   render() {
+ *     const {value} = this.state;
+ *     return (
+ *       <View style={styles.container}>
+ *         <Text style={styles.text}>{String(value)}</Text>
+ *         <Slider
+ *           step={1}
+ *           maximumValue={100}
+ *           onValueChange={this.change.bind(this)}
+ *           value={value} />
+ *       </View>
+ *     );
+ *   }
+ * }
+ *
+ * const styles = StyleSheet.create({
+ *   container: {
+ *     flex: 1,
+ *     flexDirection: 'column',
+ *     justifyContent: 'center'
+ *   },
+ *   text: {
+ *     fontSize: 50,
+ *     textAlign: 'center'
+ *   }
+ * });
+ *```
+ *
  */
-// $FlowFixMe(>=0.41.0)
-var Slider = createReactClass({
+const Slider = createReactClass({
   displayName: 'Slider',
   mixins: [NativeMethodsMixin],
 
