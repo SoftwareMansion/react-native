@@ -22,6 +22,10 @@ const path = require('path');
 const webSocketProxy = require('./util/webSocketProxy');
 const MiddlewareManager = require('./middleware/MiddlewareManager');
 
+const inspectorProxyMiddleware = require('./middleware/inspectorProxyMiddleware.js');
+const inspectorWebSocketProxy = require('./util/inspectorWebSocketProxy.js');
+
+/* $FlowFixMe(site=react_native_oss) */
 import type {ConfigT} from 'metro-config/src/configTypes.flow';
 
 export type Args = {|
@@ -54,6 +58,10 @@ async function runServer(args: Args, config: ConfigT) {
 
   args.watchFolders.forEach(middlewareManager.serveStatic);
 
+  const inspectorStore = {
+      pages: []
+  };
+
   // $FlowFixMe Metro configuration is immutable.
   config.maxWorkers = args.maxWorkers;
   // $FlowFixMe Metro configuration is immutable.
@@ -68,7 +76,9 @@ async function runServer(args: Args, config: ConfigT) {
   config.watchFolders = args.watchFolders.slice(0);
   // $FlowFixMe Metro configuration is immutable.
   config.server.enhanceMiddleware = middleware =>
-    middlewareManager.getConnectInstance().use(middleware);
+    middlewareManager.getConnectInstance()
+      .use(middleware)
+      .use(inspectorProxyMiddleware(inspectorStore));
 
   if (args.sourceExts !== config.resolver.sourceExts) {
     // $FlowFixMe Metro configuration is immutable.
@@ -85,6 +95,7 @@ async function runServer(args: Args, config: ConfigT) {
     hmrEnabled: true,
   });
 
+  const inspectorWsProxy = inspectorWebSocketProxy.attachToServer(serverInstance, inspectorStore);
   const wsProxy = webSocketProxy.attachToServer(
     serverInstance,
     '/debugger-proxy',

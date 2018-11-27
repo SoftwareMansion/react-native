@@ -17,12 +17,12 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)
 #   ./../ == react
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../..
 
-LOCAL_CFLAGS += -fexceptions -frtti
+LOCAL_CFLAGS += -fexceptions -frtti -DWITH_INSPECTOR=1
 
 LOCAL_LDLIBS += -landroid
 
 # The dynamic libraries (.so files) that this module depends on.
-LOCAL_SHARED_LIBRARIES := libfolly_json libfb libjsc libglog_init libyoga
+LOCAL_SHARED_LIBRARIES := libfolly_json libfb libjsc libglog_init libyoga libjsinspector
 
 # The static libraries (.a files) that this module depends on.
 LOCAL_STATIC_LIBRARIES := libreactnative
@@ -59,9 +59,6 @@ $(call import-module,yogajni)
 $(call import-module,cxxreact)
 $(call import-module,jsi)
 $(call import-module,jsiexecutor)
-
-# TODO(ramanpreet):
-#   Why doesn't this import-module call generate a jscexecutor.so file?
-# $(call import-module,jscexecutor)
+$(call import-module,jsinspector)
 
 include $(REACT_SRC_DIR)/jscexecutor/Android.mk

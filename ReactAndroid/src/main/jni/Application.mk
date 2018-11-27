@@ -5,7 +5,8 @@
 
 APP_BUILD_SCRIPT := Android.mk
 
-APP_ABI := armeabi-v7a x86 arm64-v8a x86_64
+#APP_ABI := armeabi-v7a x86 arm64-v8a x86_64
+APP_ABI := armeabi-v7a
 APP_PLATFORM := android-16
 
 APP_MK_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
@@ -24,11 +25,15 @@ APP_MK_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 #   etc.) are defined inside build.gradle.
 NDK_MODULE_PATH := $(APP_MK_DIR)$(HOST_DIRSEP)$(THIRD_PARTY_NDK_DIR)$(HOST_DIRSEP)$(REACT_COMMON_DIR)$(HOST_DIRSEP)$(APP_MK_DIR)first-party$(HOST_DIRSEP)$(REACT_SRC_DIR)
 
-APP_STL := gnustl_shared
+APP_STL := c++_shared
 
 # Make sure every shared lib includes a .note.gnu.build-id header
-APP_CFLAGS := -Wall -Werror
+#APP_CFLAGS := -Wall -DPRIuMAX='"llu"'
+APP_CFLAGS := -Wall
 APP_CPPFLAGS := -std=c++1y
 APP_LDFLAGS := -Wl,--build-id
+# APP_OPTIM=debug
 
-NDK_TOOLCHAIN_VERSION := 4.9
+NDK_TOOLCHAIN_VERSION := 4.8
+#cmd-strip :=
+

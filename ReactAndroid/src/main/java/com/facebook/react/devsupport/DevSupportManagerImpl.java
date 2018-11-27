@@ -494,6 +494,14 @@ public class DevSupportManagerImpl implements
             handleReloadJS();
           }
         });
+    options.put("Start inspector",
+            new DevOptionHandler() {
+                @Override
+                public void onOptionSelected() {
+                    startInspector();
+                }
+    }
+    );
     options.put(
       mDevSettings.isReloadOnJSChangeEnabled()
         ? mApplicationContext.getString(R.string.catalyst_live_reload_off)

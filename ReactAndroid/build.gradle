@@ -157,15 +157,15 @@ task downloadJSCHeaders(type: Download) {
     dest output
 }
 
-// Create Android.mk library module based on so files from mvn + include headers fetched from webkit.org
+
 task prepareJSC(dependsOn: dependenciesPath ? [] : [downloadJSCHeaders]) << {
     copy {
-        from zipTree(configurations.compile.fileCollection { dep -> dep.name == 'android-jsc' }.singleFile)
-        from dependenciesPath ? "$dependenciesPath/jsc-headers" : {downloadJSCHeaders.dest}
+        from zipTree(new File("../../jsc-android-buildscripts/dist/org/webkit/android-jsc-intl/r236355/android-jsc-intl-r236355.aar", 0))
+        from '../../jsc-android-buildscripts/dist/include'
         from 'src/main/jni/third-party/jsc'
         include 'jni/**/*.so', '*.h', 'Android.mk'
         filesMatching('*.h', { fname -> fname.path = "JavaScriptCore/${fname.path}"})
-        into "$thirdPartyNdkDir/jsc";
+        into "$thirdPartyNdkDir/jsc"
     }
 }
 
@@ -250,6 +250,7 @@ task cleanReactNdkLib(type: Exec) {
             "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
             "THIRD_PARTY_NDK_DIR=$buildDir/third-party-ndk",
             "REACT_COMMON_DIR=$projectDir/../ReactCommon",
+            "REACT_SRC_DIR=$projectDir/src/main/java/com/facebook/react",
             '-C', file('src/main/jni/react/jni').absolutePath,
             'clean'
 }
@@ -270,7 +271,7 @@ android {
     buildToolsVersion "27.0.3"
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -324,7 +325,6 @@ dependencies {
     api "com.squareup.okhttp3:okhttp:${OKHTTP_VERSION}"
     api "com.squareup.okhttp3:okhttp-urlconnection:${OKHTTP_VERSION}"
     api 'com.squareup.okio:okio:1.14.0'
-    compile 'org.webkit:android-jsc:r174650'
 
     testImplementation "junit:junit:${JUNIT_VERSION}"
     testImplementation "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"

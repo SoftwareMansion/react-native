@@ -17,10 +17,11 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 LOCAL_CFLAGS := \
   -DLOG_TAG=\"ReactNative\"
 
-LOCAL_CFLAGS += -fexceptions -frtti
+LOCAL_CFLAGS += -fexceptions -frtti -DWITH_INSPECTOR=1
 
 LOCAL_STATIC_LIBRARIES := boost
-LOCAL_SHARED_LIBRARIES := jsinspector libfolly_json glog
+LOCAL_SHARED_LIBRARIES := libjsinspector libfolly_json glog
+#LOCAL_STATIC_LIBRARIES := jschelpers jsinspector
 
 include $(BUILD_STATIC_LIBRARY)
 

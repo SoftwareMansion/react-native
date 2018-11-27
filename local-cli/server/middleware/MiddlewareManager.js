@@ -23,6 +23,7 @@ const openStackFrameInEditorMiddleware = require('./openStackFrameInEditorMiddle
 const statusPageMiddleware = require('./statusPageMiddleware');
 const systraceProfileMiddleware = require('./systraceProfileMiddleware');
 const getDevToolsMiddleware = require('./getDevToolsMiddleware');
+var query = require('qs-middleware');
 
 type Options = {
   +watchFolders: $ReadOnlyArray<string>,
@@ -46,6 +47,7 @@ module.exports = class MiddlewareManager {
     this.options = options;
     this.app = connect()
       .use(getSecurityHeadersMiddleware)
+      .use(query)
       .use(loadRawBodyMiddleware)
       .use(compression())
       .use('/debugger-ui', serveStatic(debuggerUIFolder))

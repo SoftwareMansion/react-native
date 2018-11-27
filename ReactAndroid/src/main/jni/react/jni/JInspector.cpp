@@ -4,6 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 
 #include "JInspector.h"
+#include <JavaScriptCore/JavaScript.h>
 
 #ifdef WITH_INSPECTOR
 
@@ -95,3 +96,12 @@ void JInspector::registerNatives() {
 }
 
 #endif
+
+#if defined(JSCINTERNAL) || (!defined(__APPLE__))
+#define JSC_IMPORT extern "C"
+#else
+#define JSC_IMPORT extern
+#endif
+
+JSC_IMPORT void JSStartSamplingProfilingOnMainJSCThread(JSGlobalContextRef) { }
+JSC_IMPORT JSValueRef JSPokeSamplingProfiler(JSContextRef) { return nullptr; }
