@@ -145,20 +145,7 @@ task prepareGlog(dependsOn: dependenciesPath ? [] : [downloadGlog], type: Copy) 
     }
 }
 
-task downloadJSCHeaders(type: Download) {
-    // in sync with webkit SVN revision 174650
-    def jscAPIBaseURL = 'https://raw.githubusercontent.com/WebKit/webkit/38b15a3ba3c1b0798f2036f7cea36ffdc096202e/Source/JavaScriptCore/API/'
-    def jscHeaderFiles = ['JavaScript.h', 'JSBase.h', 'JSContextRef.h', 'JSObjectRef.h', 'JSStringRef.h', 'JSValueRef.h', 'WebKitAvailability.h']
-    def output = new File(downloadsDir, 'jsc')
-    output.mkdirs()
-    src(jscHeaderFiles.collect { headerName -> "$jscAPIBaseURL$headerName" })
-    onlyIfNewer true
-    overwrite false
-    dest output
-}
-
-
-task prepareJSC(dependsOn: dependenciesPath ? [] : [downloadJSCHeaders]) << {
+task prepareJSC(dependsOn: dependenciesPath ? [] : []) << {
     copy {
         from zipTree(new File("../../jsc-android-buildscripts/dist/org/webkit/android-jsc-intl/r236355/android-jsc-intl-r236355.aar", 0))
         from '../../jsc-android-buildscripts/dist/include'
@@ -176,7 +163,6 @@ task downloadNdkBuildDependencies {
   dependsOn downloadDoubleConversion
   dependsOn downloadFolly
   dependsOn downloadGlog
-  dependsOn downloadJSCHeaders
 }
 
 def getNdkBuildName() {
@@ -258,6 +244,7 @@ task cleanReactNdkLib(type: Exec) {
 task packageReactNdkLibs(dependsOn: buildReactNdkLib, type: Copy) {
     from "$buildDir/react-ndk/all"
     exclude '**/libjsc.so'
+    exclude '**/libc++_shared.so'
     into "$buildDir/react-ndk/exported"
 }
 
@@ -271,7 +258,7 @@ android {
     buildToolsVersion "27.0.3"
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 16
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -290,7 +277,7 @@ android {
 
     sourceSets.main {
         jni.srcDirs = []
-        jniLibs.srcDirs = ["$buildDir/react-ndk/exported", 'src/main/jni/third-party/jsc/jni']
+        jniLibs.srcDirs = ["$buildDir/react-ndk/exported"]
         res.srcDirs = ['src/main/res/devsupport', 'src/main/res/shell', 'src/main/res/views/modal', 'src/main/res/views/uimanager']
         java {
             srcDirs = ['src/main/java', 'src/main/libraries/soloader/java', 'src/main/jni/first-party/fb/jni/java']
